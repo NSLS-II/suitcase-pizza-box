@@ -32,26 +32,22 @@ class PizzaBoxANHandler(HandlerBase):
         chunk = [data for data in pd.read_csv(resource_path, 
             chunksize=chunk_size, delimiter = " ", header = None) ]
         
-        _, num_cols = chunk[0].shape
+        num_cols = len(chunk[0].columns)
 
-        if(num_cols == 5):
-            for chunk in chunk:
-                chunk.columns = ['time (s)','time (ns)','index', 'counts (a)','counts (b)']
-                chunk['adc (a)'] = chunk['counts (a)'].apply(adc2counts)
-                chunk['adc (b)'] = chunk['counts (b)'].apply(adc2counts)
-                chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-                chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts (a)', 'counts (b)'])
-                chunk = chunk[['timestamp', 'adc (a)', 'adc (b)']]
-                self.chunks_of_data.append(chunk)
-        elif(num_cols == 4):
-            for chunk in chunk:
-                chunk.columns = ['time (s)','time (ns)','index', 'counts']
-                chunk['adc'] = chunk['counts'].apply(adc2counts)
-                chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
-                chunk = chunk.drop(columns = ['time (s)', 'time (ns)', 'index', 'counts'])
-                chunk = chunk[['timestamp','adc']]
-                self.chunks_of_data.append(chunk)
-        #print(resource_path['/an':] + " has " + str(num_cols) + " columns")
+        columns = ['time (s)', 'time (ns)', 'index']
+        columns_leftover = num_cols - len(columns)
+        columns = columns + [f'adc {i}' for i in range(columns_leftover)]
+        
+        for chunk in chunk:
+            chunk.columns = columns
+            
+            for column in range(columns_leftover):
+                chunk.iloc[:, column + 3] = chunk.iloc[:, column + 3].apply(adc2counts)
+            
+            chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
+            column_keys = ['timestamp'] + [f'adc {i}' for i in range(columns_leftover)]
+            chunk = chunk[column_keys]
+            self.chunks_of_data.append(chunk)    
         
 
     def __call__(self, chunk_num, column):
@@ -61,33 +57,20 @@ class PizzaBoxANHandler(HandlerBase):
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
-        _, num_cols = self.chunks_of_data[0].shape
-
-
-        if column == 0 and num_cols == 3:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]['adc (a)']}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk 
-        elif column == 1 and num_cols == 3:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]['adc (b)']}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk
-        elif column == 0 and num_cols == 2:
-            cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],\
-                'counts':  self.chunks_of_data[chunk_num]['adc']}
-            chunk = pd.DataFrame(cols, columns = ['timestamp', 'counts'])
-            return chunk
-
+        cols = {
+                'timestamp': self.chunks_of_data[chunk_num]['timestamp'],
+                'counts': self.chunks_of_data[chunk_num][f'adc {column}']
+               }
+        return pd.DataFrame(cols, columns = ['timestamp', 'counts'])
+         
+        
 
     def get_file_size(self, datum_kwarg_gen):
         resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
         fpath = resource['root'] + "/" + resource['resource_path'] 
         size = os.path.getsize(fpath)
-        sizeType = humanize.naturalsize(size)
         
-        print(sizeType)
+        return size
 
 
 class PizzaBoxENHandler(HandlerBase):
@@ -129,6 +112,5 @@ class PizzaBoxENHandler(HandlerBase):
         resource = db.reg.resource_given_datum_id(datum_kwarg_gen['datum_id'])
         fpath = resource['root'] + "/" + resource['resource_path'] 
         size = os.path.getsize(fpath)
-        sizeType = humanize.naturalsize(size)
-        
-        print(sizeType)
+               
+        return size
