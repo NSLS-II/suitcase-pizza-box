@@ -1,12 +1,6 @@
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
-
-from .handlers import PizzaBoxANHandler, PizzaBoxENHandler
-
-
-
-
 # Suitcase subpackages must follow strict naming and interface conventions. The
 # public API should include some subset of the following. Any functions not
 # implemented should be omitted, rather than included and made to raise
