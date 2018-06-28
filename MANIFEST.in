@@ -1,3 +1,3 @@
 include versioneer.py
-include suitcase/suitcase_pizza-box/_version.py
-include suitcase/suitcase_pizza-box/_version.py
+include suitcase/pizza_box/_version.py
+include suitcase/pizza_box/_version.py

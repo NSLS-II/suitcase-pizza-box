@@ -1,4 +1,4 @@
-# suitcase.pizza-box
+# suitcase.pizza_box
 
 This is a suitcase subpackage for reading a particular file format.
 
