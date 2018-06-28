@@ -43,7 +43,7 @@ def get_config():
     cfg.style = "pep440-post"
     cfg.tag_prefix = "v"
     cfg.parentdir_prefix = "None"
-    cfg.versionfile_source = "suitcase/suitcase_pizza-box/_version.py"
+    cfg.versionfile_source = "suitcase/pizza_box/_version.py"
     cfg.verbose = False
     return cfg
 
