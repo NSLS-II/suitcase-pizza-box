@@ -1,3 +1,4 @@
+from .handlers import PizzaBoxANHandlers, PizzaBoxENHandlers
 from ._version import get_versions
 __version__ = get_versions()['version']
 del get_versions
@@ -20,4 +21,4 @@ del get_versions
 #     ...
 #
 #
-# handlers = []
+handlers = [PizzaBoxANHandlers, PizzaBoxENHandlers]
