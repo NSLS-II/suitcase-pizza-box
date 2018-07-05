@@ -37,7 +37,7 @@ class PizzaBoxANHandler():
         num_cols = len(chunk[0].columns)
         columns = ['time (s)', 'time (ns)', 'index']
         columns_leftover = num_cols - len(columns)
-        columns = columns + [f'adc {i}' for i in range(columns_leftover)]
+        columns = columns + ['adc {}'.format(i) for i in range(columns_leftover)]
 
         for chunk in chunk:
             chunk.columns = columns
@@ -46,7 +46,7 @@ class PizzaBoxANHandler():
                             chunk.iloc[:, column + 3].apply(adc2counts)
             chunk['timestamp'] = chunk['time (s)'] + 1e-9*chunk['time (ns)']
             column_keys = ['timestamp'] + \
-                          [f'adc {i}' for i in range(columns_leftover)]
+                          ['adc {}'.format(i) for i in range(columns_leftover)]
             chunk = chunk[column_keys]
             self.chunks_of_data.append(chunk)
 
@@ -58,13 +58,20 @@ class PizzaBoxANHandler():
             specified chunk number/index from list of all chunks created
         '''
         cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],
-                'counts': self.chunks_of_data[chunk_num][f'adc {column}']}
+                'counts': self.chunks_of_data[chunk_num]['adc {}'.format(column)]}
         return pd.DataFrame(cols, columns=['timestamp', 'counts'])
 
-    def get_file_size(self, datum_kwarg_gen):
-        filename = f'{self._name}'
-        size = os.path.getsize(filename)
-        return size
+    def get_file_sizes(self, datum_kwargs_gen):
+        sizes = []
+        files = self.get_file_list(datum_kwargs_gen)
+        for file in files:
+            sizes.append(os.path.getsize(file))
+        return sizes
+
+    def get_file_list(self, datum_kwargs_gen):
+        file_names = []
+        file_names.append(self._name)
+        return file_names
 
 
 class PizzaBoxENHandler():
@@ -103,7 +110,14 @@ class PizzaBoxENHandler():
         result = self.chunks_of_data[chunk_num]
         return result
 
-    def get_file_size(self, datum_kwarg_gen):
-        filename = f'{self._name}'
-        size = os.path.getsize(filename)
-        return size
+    def get_file_sizes(self, datum_kwargs_gen):
+        sizes = []
+        files = self.get_file_list(datum_kwargs_gen)
+        for file in files:
+            sizes.append(os.path.getsize(file))
+        return sizes
+
+    def get_file_list(self, datum_kwargs_gen):
+        file_names = []
+        file_names.append(self._name)
+        return file_names
