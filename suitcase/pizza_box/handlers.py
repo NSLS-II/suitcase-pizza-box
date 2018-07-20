@@ -37,7 +37,7 @@ class PizzaBoxANHandler():
         num_cols = len(chunk[0].columns)
         columns = ['time (s)', 'time (ns)', 'index']
         columns_leftover = num_cols - len(columns)
-        columns = columns + ['adc {}'.format(i) for i in range(columns_leftover)]
+        columns += ['adc {}'.format(i) for i in range(columns_leftover)]
 
         for chunk in chunk:
             chunk.columns = columns
@@ -57,8 +57,9 @@ class PizzaBoxANHandler():
         result: dataframe object
             specified chunk number/index from list of all chunks created
         '''
-        cols = {'timestamp': self.chunks_of_data[chunk_num]['timestamp'],
-                'counts': self.chunks_of_data[chunk_num]['adc {}'.format(column)]}
+        chunk = self.chunks_of_data[chunk_num]
+        cols = {'timestamp': chunk['timestamp'],
+                'counts': chunk['adc {}'.format(column)]}
         return pd.DataFrame(cols, columns=['timestamp', 'counts'])
 
     def get_file_sizes(self, datum_kwargs_gen):
